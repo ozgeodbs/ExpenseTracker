@@ -33,8 +33,7 @@ public class Main {
                     } else {
                         deptID = Integer.parseInt(deptInput);
                     }
-
-                    // Handle Category selection or creation
+                    
                     System.out.print("Enter Category ID (or type 'new' to create a category): ");
                     String catInput = scanner.nextLine();
                     int catID;
