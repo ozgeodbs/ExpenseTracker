@@ -1,9 +1,5 @@
 package com.company;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.ResultSet;
 import java.sql.*;
 
 public class ExpenseManager {
@@ -11,151 +7,129 @@ public class ExpenseManager {
     // 📌 Add an Expense
     public static void addExpense(int departmentID, int categoryID, String description, double amount, String expenseDate) {
         String sql = "INSERT INTO Expenses (DepartmentID, CategoryID, Description, Amount, ExpenseDate) VALUES (?, ?, ?, ?, ?)";
-
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setInt(1, departmentID);
-            pstmt.setInt(2, categoryID);
-            pstmt.setString(3, description);
-            pstmt.setDouble(4, amount);
-            pstmt.setString(5, expenseDate);
-
-            int rowsInserted = pstmt.executeUpdate();
-            if (rowsInserted > 0) {
-                System.out.println("✅ Expense added successfully!");
-            } else {
-                System.out.println("❌ Failed to add expense.");
-            }
-
-        } catch (SQLException e) {
-            System.out.println("Error adding expense: " + e.getMessage());
-        }
+        executeUpdate(sql, departmentID, categoryID, description, amount, expenseDate);
     }
 
     // 📌 Update an Expense
     public static void updateExpense(int expenseID, String description, double amount, String expenseDate) {
         String sql = "UPDATE Expenses SET Description = ?, Amount = ?, ExpenseDate = ? WHERE ExpenseID = ?";
-
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setString(1, description);
-            pstmt.setDouble(2, amount);
-            pstmt.setString(3, expenseDate);
-            pstmt.setInt(4, expenseID);
-
-            int rowsUpdated = pstmt.executeUpdate();
-            if (rowsUpdated > 0) {
-                System.out.println("✅ Expense updated successfully!");
-            } else {
-                System.out.println("❌ Expense not found.");
-            }
-
-        } catch (SQLException e) {
-            System.out.println("Error updating expense: " + e.getMessage());
-        }
+        executeUpdate(sql, description, amount, expenseDate, expenseID);
     }
 
     // 📌 Delete an Expense
     public static void deleteExpense(int expenseID) {
         String sql = "DELETE FROM Expenses WHERE ExpenseID = ?";
+        executeUpdate(sql, expenseID);
+    }
 
+    // 📌 Common Method to Execute Update Queries (Add/Update/Delete)
+    private static void executeUpdate(String sql, Object... params) {
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
-            pstmt.setInt(1, expenseID);
-            int rowsDeleted = pstmt.executeUpdate();
-            if (rowsDeleted > 0) {
-                System.out.println("✅ Expense deleted successfully!");
+            setPreparedStatementParams(pstmt, params);
+            int rowsAffected = pstmt.executeUpdate();
+
+            if (rowsAffected > 0) {
+                System.out.println("✅ Operation successful!");
             } else {
-                System.out.println("❌ Expense not found.");
+                System.out.println("❌ Operation failed.");
             }
 
         } catch (SQLException e) {
-            System.out.println("Error deleting expense: " + e.getMessage());
+            System.out.println("Error: " + e.getMessage());
+        }
+    }
+
+    // 📌 Set Parameters for PreparedStatement
+    private static void setPreparedStatementParams(PreparedStatement pstmt, Object... params) throws SQLException {
+        for (int i = 0; i < params.length; i++) {
+            pstmt.setObject(i + 1, params[i]);
         }
     }
 
     // 📌 View All Expenses
     public static void viewExpenses() {
         String sql = "SELECT * FROM Expenses";
+        executeQuery(sql);
+    }
 
+    // 📌 View Expenses by Department
+    public static void viewExpensesByDepartment(int departmentID) {
+        String sql = "SELECT * FROM Expenses WHERE DepartmentID = ?";
+        executeQuery(sql, departmentID);
+    }
+
+    // 📌 View Expenses by Category
+    public static void viewExpensesByCategory(int categoryID) {
+        String sql = "SELECT * FROM Expenses WHERE CategoryID = ?";
+        executeQuery(sql, categoryID);
+    }
+
+    // 📌 Common Method to Execute Select Queries
+    private static void executeQuery(String sql, Object... params) {
         try (Connection conn = DBConnection.getConnection();
-             Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
-            System.out.println("📋 Expense List:");
+            setPreparedStatementParams(pstmt, params);
+            ResultSet rs = pstmt.executeQuery();
+
             while (rs.next()) {
-                System.out.println("ID: " + rs.getInt("ExpenseID") +
-                        ", Dept ID: " + rs.getInt("DepartmentID") +
-                        ", Cat ID: " + rs.getInt("CategoryID") +
-                        ", Desc: " + rs.getString("Description") +
-                        ", Amount: " + rs.getDouble("Amount") +
-                        ", Date: " + rs.getDate("ExpenseDate"));
+                displayExpense(rs);
             }
 
         } catch (SQLException e) {
-            System.out.println("Error retrieving expenses: " + e.getMessage());
+            System.out.println("Error: " + e.getMessage());
         }
+    }
+
+    // 📌 Display Expense Information
+    private static void displayExpense(ResultSet rs) throws SQLException {
+        System.out.println("ID: " + rs.getInt("ExpenseID") +
+                ", Dept ID: " + rs.getInt("DepartmentID") +
+                ", Cat ID: " + rs.getInt("CategoryID") +
+                ", Desc: " + rs.getString("Description") +
+                ", Amount: " + rs.getDouble("Amount") +
+                ", Date: " + rs.getDate("ExpenseDate"));
     }
 
     // 📌 Add Department (or return existing one)
     public static int addDepartmentAndGetID(String departmentName) {
         String checkSql = "SELECT DepartmentID FROM Departments WHERE DepartmentName = ?";
         String insertSql = "INSERT INTO Departments (DepartmentName) VALUES (?)";
-
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement checkStmt = conn.prepareStatement(checkSql);
-             PreparedStatement insertStmt = conn.prepareStatement(insertSql, PreparedStatement.RETURN_GENERATED_KEYS)) {
-
-            // Check if department exists
-            checkStmt.setString(1, departmentName);
-            ResultSet rs = checkStmt.executeQuery();
-            if (rs.next()) {
-                return rs.getInt("DepartmentID");  // Return existing ID
-            }
-
-            // Insert new department
-            insertStmt.setString(1, departmentName);
-            insertStmt.executeUpdate();
-            ResultSet generatedKeys = insertStmt.getGeneratedKeys();
-            if (generatedKeys.next()) {
-                return generatedKeys.getInt(1);  // Return new ID
-            }
-
-        } catch (SQLException e) {
-            System.out.println("Error handling department: " + e.getMessage());
-        }
-        return -1; // Return invalid ID if operation fails
+        return addEntityAndGetID(checkSql, insertSql, departmentName);
     }
 
     // 📌 Add Category (or return existing one)
     public static int addCategoryAndGetID(String categoryName) {
         String checkSql = "SELECT CategoryID FROM Categories WHERE CategoryName = ?";
         String insertSql = "INSERT INTO Categories (CategoryName) VALUES (?)";
+        return addEntityAndGetID(checkSql, insertSql, categoryName);
+    }
 
+    // 📌 Common Method to Add Entity (Department/Category)
+    private static int addEntityAndGetID(String checkSql, String insertSql, String name) {
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement checkStmt = conn.prepareStatement(checkSql);
              PreparedStatement insertStmt = conn.prepareStatement(insertSql, PreparedStatement.RETURN_GENERATED_KEYS)) {
 
-            // Check if category exists
-            checkStmt.setString(1, categoryName);
+            checkStmt.setString(1, name);
             ResultSet rs = checkStmt.executeQuery();
             if (rs.next()) {
-                return rs.getInt("CategoryID");  // Return existing ID
+                System.out.println("New ID: "+ rs.getInt(1));
+                return rs.getInt(1);  // Return existing ID
             }
 
-            // Insert new category
-            insertStmt.setString(1, categoryName);
+            insertStmt.setString(1, name);
             insertStmt.executeUpdate();
             ResultSet generatedKeys = insertStmt.getGeneratedKeys();
             if (generatedKeys.next()) {
+                System.out.println("New ID: "+ generatedKeys.getInt(1));
                 return generatedKeys.getInt(1);  // Return new ID
             }
 
         } catch (SQLException e) {
-            System.out.println("Error handling category: " + e.getMessage());
+            System.out.println("Error handling entity: " + e.getMessage());
         }
         return -1; // Return invalid ID if operation fails
     }
@@ -163,127 +137,40 @@ public class ExpenseManager {
     // 📌 Get Expense by ID
     public static void getExpenseByID(int expenseID) {
         String sql = "SELECT * FROM Expenses WHERE ExpenseID = ?";
-
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setInt(1, expenseID);
-            ResultSet rs = pstmt.executeQuery();
-
-            if (rs.next()) {
-                System.out.println("📋 Expense Details:");
-                System.out.println("ID: " + rs.getInt("ExpenseID"));
-                System.out.println("Department ID: " + rs.getInt("DepartmentID"));
-                System.out.println("Category ID: " + rs.getInt("CategoryID"));
-                System.out.println("Description: " + rs.getString("Description"));
-                System.out.println("Amount: " + rs.getDouble("Amount"));
-                System.out.println("Date: " + rs.getDate("ExpenseDate"));
-            } else {
-                System.out.println("❌ No expense found with that ID.");
-            }
-
-        } catch (SQLException e) {
-            System.out.println("Error retrieving expense: " + e.getMessage());
-        }
+        executeQuery(sql, expenseID);
     }
 
-    // 📌 View Expenses by Department
-    public static void viewExpensesByDepartment(int departmentID) {
-        String sql = "SELECT * FROM Expenses WHERE DepartmentID = ?";
-
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setInt(1, departmentID);
-            ResultSet rs = pstmt.executeQuery();
-
-            System.out.println("\n📋 Expenses for Department ID: " + departmentID);
-            while (rs.next()) {
-                System.out.println("ID: " + rs.getInt("ExpenseID") +
-                        ", Cat ID: " + rs.getInt("CategoryID") +
-                        ", Desc: " + rs.getString("Description") +
-                        ", Amount: " + rs.getDouble("Amount") +
-                        ", Date: " + rs.getDate("ExpenseDate"));
-            }
-        } catch (SQLException e) {
-            System.out.println("Error: " + e.getMessage());
-        }
-    }
-
-    // 📌 View Expenses by Category
-    public static void viewExpensesByCategory(int categoryID) {
-        String sql = "SELECT * FROM Expenses WHERE CategoryID = ?";
-
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setInt(1, categoryID);
-            ResultSet rs = pstmt.executeQuery();
-
-            System.out.println("\n📋 Expenses for Category ID: " + categoryID);
-            while (rs.next()) {
-                System.out.println("ID: " + rs.getInt("ExpenseID") +
-                        ", Dept ID: " + rs.getInt("DepartmentID") +
-                        ", Desc: " + rs.getString("Description") +
-                        ", Amount: " + rs.getDouble("Amount") +
-                        ", Date: " + rs.getDate("ExpenseDate"));
-            }
-        } catch (SQLException e) {
-            System.out.println("Error: " + e.getMessage());
-        }
-    }
-
+    // 📌 Calculate Total Expenses by Category
     public static void calculateTotalExpensesByCategory(int categoryID) {
         String sql = "SELECT SUM(Amount) AS Total FROM Expenses WHERE CategoryID = ?";
-
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setInt(1, categoryID);
-            ResultSet rs = pstmt.executeQuery();
-
-            if (rs.next()) {
-                double total = rs.getDouble("Total");
-                System.out.println("\n💰 Total Expenses : " + total);
-            }
-        } catch (SQLException e) {
-            System.out.println("Error: " + e.getMessage());
-        }
+        executeSumQuery(sql, categoryID);
     }
 
+    // 📌 Calculate Total Expenses by Department
     public static void calculateTotalExpensesByDepartment(int departmentID) {
         String sql = "SELECT SUM(Amount) AS Total FROM Expenses WHERE DepartmentID = ?";
-
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setInt(1, departmentID);
-            ResultSet rs = pstmt.executeQuery();
-
-            if (rs.next()) {
-                double total = rs.getDouble("Total");
-                System.out.println("\n💰 Total Expenses : " + total);
-            }
-        } catch (SQLException e) {
-            System.out.println("Error: " + e.getMessage());
-        }
+        executeSumQuery(sql, departmentID);
     }
 
     // 📌 Calculate Total Expenses in a Date Range
     public static void calculateTotalExpensesInRange(String startDate, String endDate) {
         String sql = "SELECT SUM(Amount) AS Total FROM Expenses WHERE ExpenseDate BETWEEN ? AND ?";
+        executeSumQuery(sql, startDate, endDate);
+    }
 
+    // 📌 Common Method to Execute Sum Queries
+    private static void executeSumQuery(String sql, Object... params) {
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
-            pstmt.setString(1, startDate);
-            pstmt.setString(2, endDate);
+            setPreparedStatementParams(pstmt, params);
             ResultSet rs = pstmt.executeQuery();
 
             if (rs.next()) {
                 double total = rs.getDouble("Total");
-                System.out.println("\n💰 Total Expenses from " + startDate + " to " + endDate + ": " + total);
+                System.out.println("\n💰 Total Expenses: " + total);
             }
+
         } catch (SQLException e) {
             System.out.println("Error: " + e.getMessage());
         }
@@ -292,7 +179,6 @@ public class ExpenseManager {
     // 📌 Generate Monthly Report
     public static void generateMonthlyReport() {
         String sql = "SELECT DATE_FORMAT(ExpenseDate, '%Y-%m') AS Month, SUM(Amount) AS Total FROM Expenses GROUP BY Month ORDER BY Month DESC";
-
         try (Connection conn = DBConnection.getConnection();
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
@@ -305,5 +191,4 @@ public class ExpenseManager {
             System.out.println("Error: " + e.getMessage());
         }
     }
-
 }
