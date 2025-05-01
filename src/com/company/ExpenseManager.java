@@ -233,6 +233,42 @@ public class ExpenseManager {
         }
     }
 
+    public static void calculateTotalExpensesByCategory(int categoryID) {
+        String sql = "SELECT SUM(Amount) AS Total FROM Expenses WHERE CategoryID = ?";
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, categoryID);
+            ResultSet rs = pstmt.executeQuery();
+
+            if (rs.next()) {
+                double total = rs.getDouble("Total");
+                System.out.println("\n💰 Total Expenses : " + total);
+            }
+        } catch (SQLException e) {
+            System.out.println("Error: " + e.getMessage());
+        }
+    }
+
+    public static void calculateTotalExpensesByDepartment(int departmentID) {
+        String sql = "SELECT SUM(Amount) AS Total FROM Expenses WHERE DepartmentID = ?";
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, departmentID);
+            ResultSet rs = pstmt.executeQuery();
+
+            if (rs.next()) {
+                double total = rs.getDouble("Total");
+                System.out.println("\n💰 Total Expenses : " + total);
+            }
+        } catch (SQLException e) {
+            System.out.println("Error: " + e.getMessage());
+        }
+    }
+
     // 📌 Calculate Total Expenses in a Date Range
     public static void calculateTotalExpensesInRange(String startDate, String endDate) {
         String sql = "SELECT SUM(Amount) AS Total FROM Expenses WHERE ExpenseDate BETWEEN ? AND ?";

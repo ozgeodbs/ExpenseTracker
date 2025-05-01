@@ -18,7 +18,7 @@ public class Main {
             System.out.println("8. View Expenses by Category");
             System.out.println("9. Calculate Total Expenses (Date Range)");
             System.out.println("10. Generate Monthly Expense Report");
-            System.out.println("11. Exit");
+            System.out.println("11. Exit \n");
             System.out.print("Enter choice: ");
 
             String choiceInput = scanner.nextLine();
@@ -166,6 +166,7 @@ public class Main {
                         break;
                     }
                     int viewDeptID = Integer.parseInt(viewDeptIdInput);
+                    ExpenseManager.calculateTotalExpensesByDepartment(viewDeptID);
                     ExpenseManager.viewExpensesByDepartment(viewDeptID);
                     break;
 
@@ -177,6 +178,7 @@ public class Main {
                         break;
                     }
                     int viewCatID = Integer.parseInt(viewCatIdInput);
+                    ExpenseManager.calculateTotalExpensesByCategory(viewCatID);
                     ExpenseManager.viewExpensesByCategory(viewCatID);
                     break;
 
