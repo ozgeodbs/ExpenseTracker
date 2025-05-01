@@ -1,0 +1,40 @@
+-- Departments Table
+CREATE TABLE Departments (
+    DepartmentID INT AUTO_INCREMENT PRIMARY KEY,
+    DepartmentName VARCHAR(100) UNIQUE NOT NULL
+);
+
+-- Categories Table
+CREATE TABLE Categories (
+    CategoryID INT AUTO_INCREMENT PRIMARY KEY,
+    CategoryName VARCHAR(100) UNIQUE NOT NULL
+);
+
+-- Expenses Table
+CREATE TABLE Expenses (
+    ExpenseID INT AUTO_INCREMENT PRIMARY KEY,
+    DepartmentID INT NOT NULL,
+    CategoryID INT NOT NULL,
+    Description VARCHAR(255),
+    Amount DOUBLE NOT NULL,
+    ExpenseDate DATE NOT NULL,
+    FOREIGN KEY (DepartmentID) REFERENCES Departments(DepartmentID),
+    FOREIGN KEY (CategoryID) REFERENCES Categories(CategoryID)
+);
+
+-- Insert Department Examples
+INSERT INTO Departments (DepartmentName) VALUES
+('Management'),
+('Marketing'),
+('IT'),
+('HR'),
+('Operations');
+
+-- Insert Category Examples
+INSERT INTO Categories (CategoryName) VALUES
+('Salaries'),
+('Travel'),
+('Equipment'),
+('Utilities'),
+('Office Supplies');
+
