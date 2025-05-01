@@ -14,7 +14,11 @@ public class Main {
             System.out.println("4. Delete Expense");
             System.out.println("5. Add Department");
             System.out.println("6. Add Category");
-            System.out.println("7. Exit");
+            System.out.println("7. View Expenses by Department");
+            System.out.println("8. View Expenses by Category");
+            System.out.println("9. Calculate Total Expenses (Date Range)");
+            System.out.println("10. Generate Monthly Expense Report");
+            System.out.println("11. Exit");
             System.out.print("Enter choice: ");
 
             int choice = scanner.nextInt();
@@ -91,9 +95,34 @@ public class Main {
                     ExpenseManager.addCategoryAndGetID(catName);
                     break;
                 case 7:
+                    System.out.print("Enter Department ID: ");
+                    int viewDeptID = scanner.nextInt();
+                    ExpenseManager.viewExpensesByDepartment(viewDeptID);
+                    break;
+
+                case 8:
+                    System.out.print("Enter Category ID: ");
+                    int viewCatID = scanner.nextInt();
+                    ExpenseManager.viewExpensesByCategory(viewCatID);
+                    break;
+
+                case 9:
+                    System.out.print("Enter Start Date (YYYY-MM-DD): ");
+                    String startDate = scanner.nextLine();
+                    System.out.print("Enter End Date (YYYY-MM-DD): ");
+                    String endDate = scanner.nextLine();
+                    ExpenseManager.calculateTotalExpensesInRange(startDate, endDate);
+                    break;
+
+                case 10:
+                    ExpenseManager.generateMonthlyReport();
+                    break;
+
+                case 11:
                     System.out.println("Exiting...");
                     scanner.close();
                     return;
+
                 default:
                     System.out.println("Invalid choice! Try again.");
             }

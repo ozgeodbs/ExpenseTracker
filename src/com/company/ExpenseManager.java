@@ -4,11 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.ResultSet;
-import java.util.Scanner;
-
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
 
 public class ExpenseManager {
 
@@ -190,4 +186,88 @@ public class ExpenseManager {
             System.out.println("Error retrieving expense: " + e.getMessage());
         }
     }
+
+    // 📌 View Expenses by Department
+    public static void viewExpensesByDepartment(int departmentID) {
+        String sql = "SELECT * FROM Expenses WHERE DepartmentID = ?";
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, departmentID);
+            ResultSet rs = pstmt.executeQuery();
+
+            System.out.println("\n📋 Expenses for Department ID: " + departmentID);
+            while (rs.next()) {
+                System.out.println("ID: " + rs.getInt("ExpenseID") +
+                        ", Cat ID: " + rs.getInt("CategoryID") +
+                        ", Desc: " + rs.getString("Description") +
+                        ", Amount: " + rs.getDouble("Amount") +
+                        ", Date: " + rs.getDate("ExpenseDate"));
+            }
+        } catch (SQLException e) {
+            System.out.println("Error: " + e.getMessage());
+        }
+    }
+
+    // 📌 View Expenses by Category
+    public static void viewExpensesByCategory(int categoryID) {
+        String sql = "SELECT * FROM Expenses WHERE CategoryID = ?";
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, categoryID);
+            ResultSet rs = pstmt.executeQuery();
+
+            System.out.println("\n📋 Expenses for Category ID: " + categoryID);
+            while (rs.next()) {
+                System.out.println("ID: " + rs.getInt("ExpenseID") +
+                        ", Dept ID: " + rs.getInt("DepartmentID") +
+                        ", Desc: " + rs.getString("Description") +
+                        ", Amount: " + rs.getDouble("Amount") +
+                        ", Date: " + rs.getDate("ExpenseDate"));
+            }
+        } catch (SQLException e) {
+            System.out.println("Error: " + e.getMessage());
+        }
+    }
+
+    // 📌 Calculate Total Expenses in a Date Range
+    public static void calculateTotalExpensesInRange(String startDate, String endDate) {
+        String sql = "SELECT SUM(Amount) AS Total FROM Expenses WHERE ExpenseDate BETWEEN ? AND ?";
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setString(1, startDate);
+            pstmt.setString(2, endDate);
+            ResultSet rs = pstmt.executeQuery();
+
+            if (rs.next()) {
+                double total = rs.getDouble("Total");
+                System.out.println("\n💰 Total Expenses from " + startDate + " to " + endDate + ": " + total);
+            }
+        } catch (SQLException e) {
+            System.out.println("Error: " + e.getMessage());
+        }
+    }
+
+    // 📌 Generate Monthly Report
+    public static void generateMonthlyReport() {
+        String sql = "SELECT DATE_FORMAT(ExpenseDate, '%Y-%m') AS Month, SUM(Amount) AS Total FROM Expenses GROUP BY Month ORDER BY Month DESC";
+
+        try (Connection conn = DBConnection.getConnection();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+
+            System.out.println("\n📆 Monthly Expense Report:");
+            while (rs.next()) {
+                System.out.println("Month: " + rs.getString("Month") + " | Total: " + rs.getDouble("Total"));
+            }
+        } catch (SQLException e) {
+            System.out.println("Error: " + e.getMessage());
+        }
+    }
+
 }
