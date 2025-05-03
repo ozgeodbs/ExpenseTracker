@@ -11,7 +11,7 @@ public class AddDepartmentCommand implements Command {
         System.out.print("Enter Department Name: ");
         String deptName = scanner.nextLine();
         if (!ValidationUtils.isValidDescription(deptName)) {
-            System.out.println("❌ Invalid Department Name.");
+            System.out.println("Invalid Department Name.");
         }
         ExpenseManager.addDepartmentAndGetID(deptName);
     }

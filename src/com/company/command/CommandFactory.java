@@ -28,7 +28,7 @@ public class CommandFactory {
                 return new GenerateMonthlyReportCommand();
             case 11:
                 System.out.println("Exiting...");
-                scanner.close();
+                System.exit(0);
             default:
                 throw new IllegalArgumentException("Invalid choice!");
         }

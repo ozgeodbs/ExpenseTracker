@@ -13,11 +13,6 @@ public class Expense {
         this.expenseDate = expenseDate;
     }
 
-    public int getExpenseID() { return expenseID; }
-    public String getDescription() { return description; }
-    public double getAmount() { return amount; }
-    public String getExpenseDate() { return expenseDate; }
-
     @Override
     public String toString() {
         return "ExpenseID: " + expenseID + ", Description: " + description +

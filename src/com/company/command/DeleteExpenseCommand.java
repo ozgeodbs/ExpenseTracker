@@ -11,7 +11,7 @@ public class DeleteExpenseCommand implements Command {
         System.out.print("Enter Expense ID to delete: ");
         String delIdInput = scanner.nextLine();
         if (!ValidationUtils.isValidPositiveInt(delIdInput)) {
-            System.out.println("❌ Invalid Expense ID.");
+            System.out.println("Invalid Expense ID.");
         }
         int deleteID = Integer.parseInt(delIdInput);
         ExpenseManager.deleteExpense(deleteID);

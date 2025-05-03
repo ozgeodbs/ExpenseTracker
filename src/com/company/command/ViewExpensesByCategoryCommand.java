@@ -11,7 +11,7 @@ public class ViewExpensesByCategoryCommand implements Command {
         System.out.print("Enter Category ID: ");
         String viewCatIdInput = scanner.nextLine();
         if (!ValidationUtils.isValidPositiveInt(viewCatIdInput)) {
-            System.out.println("❌ Invalid Category ID.");
+            System.out.println("Invalid Category ID.");
         }
         int viewCatID = Integer.parseInt(viewCatIdInput);
         ExpenseManager.calculateTotalExpensesByCategory(viewCatID);

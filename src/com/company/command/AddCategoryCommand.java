@@ -11,7 +11,7 @@ public class AddCategoryCommand implements Command {
         System.out.print("Enter Category Name: ");
         String catName = scanner.nextLine();
         if (!ValidationUtils.isValidDescription(catName)) {
-            System.out.println("❌ Invalid Category Name.");
+            System.out.println("Invalid Category Name.");
         }
         ExpenseManager.addCategoryAndGetID(catName);
     }

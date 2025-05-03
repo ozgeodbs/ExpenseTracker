@@ -11,7 +11,7 @@ public class ViewExpensesByDepartmentCommand implements Command {
         System.out.print("Enter Department ID: ");
         String viewDeptIdInput = scanner.nextLine();
         if (!ValidationUtils.isValidPositiveInt(viewDeptIdInput)) {
-            System.out.println("❌ Invalid Department ID.");
+            System.out.println("Invalid Department ID.");
         }
         int viewDeptID = Integer.parseInt(viewDeptIdInput);
         ExpenseManager.calculateTotalExpensesByDepartment(viewDeptID);
